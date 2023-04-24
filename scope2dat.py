@@ -20,6 +20,32 @@ def time_array(time,START,dt):
 			time[i] = time[i-1]+dt
 	return time
  
+def channel_defs(scpchan):
+    # Convert the Pandas Series to a string
+    scpchan_str = scpchan.iloc[0]
+
+    # Define the wanted strings in lowercase
+    pre_strings = ["pre"]
+    post_strings = ["post"]
+    bottle_strings = ["bottle"]
+    trigger_strings = ["trigger", "trig"]
+
+    # Convert the input string to lowercase
+    scpchan_lower = scpchan_str.lower()
+
+    if any(s in scpchan_lower for s in pre_strings):
+        chdef = 1000
+    elif any(s in scpchan_lower for s in post_strings):
+        chdef = 667
+    elif any(s in scpchan_lower for s in bottle_strings):
+        chdef = 5000
+    elif any(s in scpchan_lower for s in trigger_strings):
+        chdef = 750
+    else:
+        print("Incorrect column definition in ScopeChannels.csv. Aborting data processing.")
+        sys.exit(1)
+
+    return chdef
 
 ####################################################################################################
 #                                           Reading CSV file                                       #
@@ -64,11 +90,30 @@ data = data.reset_index(drop=True)
 data.to_csv("shot"+ shot_num +"scp2_volts.csv",index=False)
 
 ####################################################################################################
+#                                        Reading in scope channels                                 #
+####################################################################################################
+
+#Saving the strings from ScopeChannels.csv
+channels = read_csv('ScopeChannels.csv')
+shot_row = channels.loc[channels['ShotNumber'] == int(shot_num)]
+scp2ch1  = shot_row['scp2ch1'] 
+scp2ch2  = shot_row['scp2ch2']
+scp2ch3  = shot_row['scp2ch3']
+
+ch1def   = channel_defs(scp2ch1)
+ch2def   = channel_defs(scp2ch2)
+ch3def   = channel_defs(scp2ch3)
+
+####################################################################################################
 #                                        Converting voltage to PSI                                 #
 ####################################################################################################
 
-CH1 = v_to_psi(CH1,667) #Blue line, post-choke
-CH2 = v_to_psi(CH2,1000) #Red line, pre-choke
+CH1 = v_to_psi(CH1,ch1def) #Blue line, post-choke
+CH2 = v_to_psi(CH2,ch2def) #Red line, pre-choke
+CH3 = v_to_psi(CH3,ch3def) #Trigger
+
+# CH1 = v_to_psi(CH1,667) #Blue line, post-choke
+# CH2 = v_to_psi(CH2,1000) #Red line, pre-choke
 
 ####################################################################################################
 #                                       Saving pressure data to CSV                                #
