@@ -55,7 +55,8 @@ def channel_defs(scpchan):
 # shot_num = input("Enter shot number to post-process: ")
 shot_num = sys.argv[1]
 filename = "shot"+ shot_num +"scp1_raw.csv"
-data = read_csv(filename)
+print('Reading in scope 1 data from '+ filename)
+data = read_csv(filename, low_memory=False)
 
 
 
@@ -97,7 +98,8 @@ data.to_csv("shot"+ shot_num +"scp1_volts.csv",index=False)
 ####################################################################################################
 
 #Saving the strings from ScopeChannels.csv
-channels = read_csv('ScopeChannels.csv')
+print('Reading scope channel definitions from ../RDE_ShotSheets/ScopeChannels.csv')
+channels = read_csv('../RDE_ShotSheets/ScopeChannels.csv')
 shot_row = channels.loc[channels['ShotNumber'] == int(shot_num)]
 scp1ch1  = shot_row['scp1ch1'] 
 scp1ch2  = shot_row['scp1ch2']
@@ -105,36 +107,30 @@ scp1ch3  = shot_row['scp1ch3']
 scp1ch4  = shot_row['scp1ch4']
 
 ch1def   = channel_defs(scp1ch1)
-print('Channel 1 is ' + scp1ch1 + 'psi')
 ch2def   = channel_defs(scp1ch2)
-print('Channel 2 is ' + scp1ch2 + 'psi')
 ch3def   = channel_defs(scp1ch3)
-print('Channel 3 is ' + scp1ch3 + 'psi')
 ch4def   = channel_defs(scp1ch4)
-print('Channel 4 is ' + scp1ch4 + 'psi')
 
 ####################################################################################################
 #                                        Converting voltage to PSI                                 #
 ####################################################################################################
 
+print('Modifying scope 1 voltage data using channel definitions.')
 CH1 = v_to_psi(CH1,ch1def) #Blue bottle
 CH2 = v_to_psi(CH2,ch2def) #Red bottle
 CH3 = v_to_psi(CH3,ch3def) #Blue line, pre-choke
 CH4 = v_to_psi(CH4,ch4def) #Trigger
 
-# CH1 = v_to_psi(CH1,5000) #Blue bottle
-# CH2 = v_to_psi(CH2,5000) #Red bottle
-# CH3 = v_to_psi(CH3,1000) #Blue line, pre-choke
-
 ####################################################################################################
 #                                       Saving pressure data to CSV                                #
 ####################################################################################################
 
-
 #Creating array for new csv file
+print('Creating dataframe of scope 1 channels converted to pressure.')
 scope1 = DataFrame({"time1":time1,"BlueBottle":CH1,"RedBottle":CH2,"BluePre":CH3,"TRIG":CH4})
 scope1 = scope1.drop(index=0) #dropping the units row
 scope1 = scope1.reset_index(drop=True)
 #Saving to .csv
+print('Saving dataframe to .csv')
 scope1.to_csv("scope1shot"+shot_num+"_pressure.csv",index=False)
-
+print ("Scope 1 data saved as scope1shot"+shot_num+"_pressure.csv")
