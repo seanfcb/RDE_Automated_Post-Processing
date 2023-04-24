@@ -19,7 +19,33 @@ def time_array(time,START,dt):
 		else:
 			time[i] = time[i-1]+dt
 	return time
- 
+
+def channel_defs(scpchan):
+    # Convert the Pandas Series to a string
+    scpchan_str = scpchan.iloc[0]
+
+    # Define the wanted strings in lowercase
+    pre_strings = ["pre"]
+    post_strings = ["post"]
+    bottle_strings = ["bottle"]
+    trigger_strings = ["trigger", "trig"]
+
+    # Convert the input string to lowercase
+    scpchan_lower = scpchan_str.lower()
+
+    if any(s in scpchan_lower for s in pre_strings):
+        chdef = 1000
+    elif any(s in scpchan_lower for s in post_strings):
+        chdef = 667
+    elif any(s in scpchan_lower for s in bottle_strings):
+        chdef = 5000
+    elif any(s in scpchan_lower for s in trigger_strings):
+        chdef = 750
+    else:
+        print("Incorrect column definition in ScopeChannels.csv. Aborting data processing.")
+        sys.exit(1)
+
+    return chdef
 
 ####################################################################################################
 #                                           Reading CSV file                                       #
@@ -64,13 +90,40 @@ data = data.iloc[:, :-2] #Dropping the last two columns
 data = data.reset_index(drop=True)
 data.to_csv("shot"+ shot_num +"scp1_volts.csv",index=False)
 
+
+####################################################################################################
+#                                        Reading in scope channels                                 #
+####################################################################################################
+
+#Saving the strings from ScopeChannels.csv
+channels = read_csv('ScopeChannels.csv')
+shot_row = channels.loc[channels['ShotNumber'] == int(shot_num)]
+scp1ch1  = shot_row['scp1ch1'] 
+scp1ch2  = shot_row['scp1ch2']
+scp1ch3  = shot_row['scp1ch3']
+scp1ch4  = shot_row['scp1ch4']
+
+ch1def   = channel_defs(scp1ch1)
+print('Channel 1 is ' + scp1ch1 + 'psi')
+ch2def   = channel_defs(scp1ch2)
+print('Channel 2 is ' + scp1ch2 + 'psi')
+ch3def   = channel_defs(scp1ch3)
+print('Channel 3 is ' + scp1ch3 + 'psi')
+ch4def   = channel_defs(scp1ch4)
+print('Channel 4 is ' + scp1ch4 + 'psi')
+
 ####################################################################################################
 #                                        Converting voltage to PSI                                 #
 ####################################################################################################
 
-CH1 = v_to_psi(CH1,5000) #Blue bottle
-CH2 = v_to_psi(CH2,5000) #Red bottle
-CH3 = v_to_psi(CH3,1000) #Blue line, pre-choke
+CH1 = v_to_psi(CH1,ch1def) #Blue bottle
+CH2 = v_to_psi(CH2,ch2def) #Red bottle
+CH3 = v_to_psi(CH3,ch3def) #Blue line, pre-choke
+CH4 = v_to_psi(CH4,ch4def) #Trigger
+
+# CH1 = v_to_psi(CH1,5000) #Blue bottle
+# CH2 = v_to_psi(CH2,5000) #Red bottle
+# CH3 = v_to_psi(CH3,1000) #Blue line, pre-choke
 
 ####################################################################################################
 #                                       Saving pressure data to CSV                                #

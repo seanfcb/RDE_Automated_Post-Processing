@@ -2,9 +2,15 @@
 from pandas import *
 import matplotlib.pyplot as plt
 
+shot_num = input("Enter shot number to post-process: ")
+
+scope1_name = "scope1shot"+ shot_num +"_pressure.csv"
+
+scope2_name = "scope2shot"+ shot_num +"_pressure.csv"
+
 #Opening scope csv files
-scope1 = read_csv("scope1.csv")
-scope2 = read_csv("scope2.csv")
+scope1 = read_csv(scope1_name)
+scope2 = read_csv(scope2_name)
 
 #Creating all data arrays
 time1 = scope1['time1'].tolist()
