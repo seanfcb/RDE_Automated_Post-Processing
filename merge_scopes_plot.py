@@ -1,11 +1,15 @@
 # importing module
 from pandas import *
 import matplotlib.pyplot as plt
+import subprocess
 
 shot_num = input("Enter shot number to post-process: ")
 
-scope1_name = "scope1shot"+ shot_num +"_pressure.csv"
+subprocess.run(["python3",'scope1dat.py',shot_num])
+subprocess.run(["python3",'scope2dat.py',shot_num])
 
+
+scope1_name = "scope1shot"+ shot_num +"_pressure.csv"
 scope2_name = "scope2shot"+ shot_num +"_pressure.csv"
 
 #Opening scope csv files

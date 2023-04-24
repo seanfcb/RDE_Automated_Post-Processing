@@ -52,7 +52,8 @@ def channel_defs(scpchan):
 ####################################################################################################
 
 
-shot_num = input("Enter shot number to post-process: ")
+# shot_num = input("Enter shot number to post-process: ")
+shot_num = sys.argv[1]
 filename = "shot"+ shot_num +"scp1_raw.csv"
 data = read_csv(filename)
 
