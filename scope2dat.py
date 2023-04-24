@@ -55,7 +55,8 @@ def channel_defs(scpchan):
 # shot_num = input("Enter shot number to post-process: ")
 shot_num = sys.argv[1]
 filename = "shot"+ shot_num +"scp2_raw.csv"
-data = read_csv(filename)
+print('Reading in scope 2 data from '+ filename)
+data = read_csv(filename, low_memory=False)
 
 
 
@@ -95,7 +96,8 @@ data.to_csv("shot"+ shot_num +"scp2_volts.csv",index=False)
 ####################################################################################################
 
 #Saving the strings from ScopeChannels.csv
-channels = read_csv('ScopeChannels.csv')
+print('Reading scope channel definitions from ../RDE_ShotSheets/ScopeChannels.csv')
+channels = read_csv('../RDE_ShotSheets/ScopeChannels.csv')
 shot_row = channels.loc[channels['ShotNumber'] == int(shot_num)]
 scp2ch1  = shot_row['scp2ch1'] 
 scp2ch2  = shot_row['scp2ch2']
@@ -109,6 +111,7 @@ ch3def   = channel_defs(scp2ch3)
 #                                        Converting voltage to PSI                                 #
 ####################################################################################################
 
+print('Modifying scope 2 voltage data using channel definitions.')
 CH1 = v_to_psi(CH1,ch1def) #Blue line, post-choke
 CH2 = v_to_psi(CH2,ch2def) #Red line, pre-choke
 CH3 = v_to_psi(CH3,ch3def) #Trigger
@@ -122,10 +125,13 @@ CH3 = v_to_psi(CH3,ch3def) #Trigger
 
 
 #Creating array for new csv file
+print('Creating dataframe of scope 2 channels converted to pressure.')
 scope2 = DataFrame({"time2":time2,"BluePost":CH1,"RedPre":CH2,"TRIG":CH3})
 scope2 = scope2.drop(index=0) #dropping the units row
 scope2 = scope2.reset_index(drop=True)
 
 #Saving to .csv
+print('Saving dataframe to .csv')
 scope2.to_csv("scope2shot"+shot_num+"_pressure.csv",index=False)
+print ("Scope 2 data saved as scope2shot"+shot_num+"_pressure.csv")
 
