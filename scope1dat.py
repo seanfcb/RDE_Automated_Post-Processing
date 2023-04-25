@@ -54,7 +54,7 @@ def channel_defs(scpchan):
 
 # shot_num = input("Enter shot number to post-process: ")
 shot_num = sys.argv[1]
-filename = "shot"+ shot_num +"scp1_raw.csv"
+filename = "RawData/shot"+ shot_num +"scp1_raw.csv"
 print('Reading in scope 1 data from '+ filename)
 data = read_csv(filename, low_memory=False)
 
@@ -90,7 +90,7 @@ data['X'] = time1
 data = data.drop(index=0) #dropping the units row
 data = data.iloc[:, :-2] #Dropping the last two columns
 data = data.reset_index(drop=True)
-data.to_csv("shot"+ shot_num +"scp1_volts.csv",index=False)
+data.to_csv("VoltageTime/shot"+ shot_num +"scp1_volts.csv",index=False)
 
 
 ####################################################################################################
@@ -132,5 +132,5 @@ scope1 = scope1.drop(index=0) #dropping the units row
 scope1 = scope1.reset_index(drop=True)
 #Saving to .csv
 print('Saving dataframe to .csv')
-scope1.to_csv("scope1shot"+shot_num+"_pressure.csv",index=False)
+scope1.to_csv("PressureTime/scope1shot"+shot_num+"_pressure.csv",index=False)
 print ("Scope 1 data saved as scope1shot"+shot_num+"_pressure.csv")

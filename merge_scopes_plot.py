@@ -9,8 +9,8 @@ subprocess.run(["python3",'scope1dat.py',shot_num])
 subprocess.run(["python3",'scope2dat.py',shot_num])
 
 
-scope1_name = "scope1shot"+ shot_num +"_pressure.csv"
-scope2_name = "scope2shot"+ shot_num +"_pressure.csv"
+scope1_name = "PressureTime/scope1shot"+ shot_num +"_pressure.csv"
+scope2_name = "PressureTime/scope2shot"+ shot_num +"_pressure.csv"
 
 #Opening scope csv files
 scope1 = read_csv(scope1_name)
@@ -38,7 +38,7 @@ plt.ylabel("Pressure (PSI)")
 plt.legend(["Bottle","Pre-choke","Post-choke"], loc ="lower right")
 plt.ylim(0,1000)
 print("Saving oxygen line figure as shot_" + shot_num +"_ox_line.svg")
-plt.savefig("shot_" + shot_num + "_ox_line.svg")
+plt.savefig("ShotPlots/shot_" + shot_num + "_ox_line.svg")
 plt.show()
 
 plt.figure(2)
@@ -49,5 +49,5 @@ plt.ylabel("Pressure (PSI)")
 plt.legend(["Bottle","Pre-choke"], loc ="lower right")
 plt.ylim(0,1000)
 print("Saving fuel line figure as shot_" + shot_num + "_fuel_line.svg")
-plt.savefig("shot_" + shot_num + "_fuel_line.svg")
+plt.savefig("ShotPlots/shot_" + shot_num + "_fuel_line.svg")
 plt.show()
