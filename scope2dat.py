@@ -54,7 +54,7 @@ def channel_defs(scpchan):
 
 # shot_num = input("Enter shot number to post-process: ")
 shot_num = sys.argv[1]
-filename = "shot"+ shot_num +"scp2_raw.csv"
+filename = "RawData/shot"+ shot_num +"scp2_raw.csv"
 print('Reading in scope 2 data from '+ filename)
 data = read_csv(filename, low_memory=False)
 
@@ -89,7 +89,7 @@ data['X'] = time2
 data = data.drop(index=0) #dropping the units row
 data = data.iloc[:, :-2] #Dropping the last two columns
 data = data.reset_index(drop=True)
-data.to_csv("shot"+ shot_num +"scp2_volts.csv",index=False)
+data.to_csv("VoltageTime/shot"+ shot_num +"scp2_volts.csv",index=False)
 
 ####################################################################################################
 #                                        Reading in scope channels                                 #
@@ -116,9 +116,6 @@ CH1 = v_to_psi(CH1,ch1def) #Blue line, post-choke
 CH2 = v_to_psi(CH2,ch2def) #Red line, pre-choke
 CH3 = v_to_psi(CH3,ch3def) #Trigger
 
-# CH1 = v_to_psi(CH1,667) #Blue line, post-choke
-# CH2 = v_to_psi(CH2,1000) #Red line, pre-choke
-
 ####################################################################################################
 #                                       Saving pressure data to CSV                                #
 ####################################################################################################
@@ -132,6 +129,6 @@ scope2 = scope2.reset_index(drop=True)
 
 #Saving to .csv
 print('Saving dataframe to .csv')
-scope2.to_csv("scope2shot"+shot_num+"_pressure.csv",index=False)
+scope2.to_csv("PressureTime/scope2shot"+shot_num+"_pressure.csv",index=False)
 print ("Scope 2 data saved as scope2shot"+shot_num+"_pressure.csv")
 
