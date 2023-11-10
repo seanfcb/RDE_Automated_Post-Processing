@@ -22,6 +22,7 @@ def circle_equation(coords, h, k, r):
 
 # Fit the circle equation to the data with an initial guess for the radius
 initial_guess = [0, 0, initial_r_guess]  # Initial guesses for h, k, and r
+#params, _ = curve_fit(circle_equation, (x_coords_mm, y_coords_mm), np.zeros_like(x_coords_mm), p0=initial_guess)
 params, _ = curve_fit(circle_equation, (x_coords_mm, y_coords_mm), np.zeros_like(x_coords_mm), p0=initial_guess, bounds=([-np.inf, -np.inf, 0], np.inf))
 
 
