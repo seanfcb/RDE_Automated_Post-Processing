@@ -1,65 +1,82 @@
-
 import pandas as pd
 import numpy as np
+from scipy.optimize import least_squares
 import matplotlib.pyplot as plt
-from scipy.optimize import curve_fit
-from scipy.interpolate import UnivariateSpline
 
-# Read the CSV file into a DataFrame
-df = pd.read_csv("xy_t.csv")  # Change the file name here
-
-# Extract the x, y, and time values in millimeters
-x_coords_mm = df['X'].values
-y_coords_mm = df['Y'].values
-time_values = df['t'].values
-
-# Known radius value as an initial guess
-initial_r_guess = 64.35/2  # Replace with your accurate radius measurement
-
-# Use the original circle equation
-def circle_equation(coords, h, k, r):
-    x, y = coords
+def fit_circle(params, x, y):
+    """ Function to calculate the residuals for circle fitting. """
+    h, k, r = params
     return (x - h)**2 + (y - k)**2 - r**2
 
-# Fit the circle equation to the data with an initial guess for the radius
-initial_guess = [0, 0, initial_r_guess]  # Initial guesses for h, k, and r
-params, _ = curve_fit(circle_equation, (x_coords_mm, y_coords_mm), np.zeros_like(x_coords_mm), p0=initial_guess)
+def circle_equations(t, h, k, r, omega, phi):
+    """ Function to compute x(t), y(t), x'(t), and y'(t). """
+    x = h + r * np.cos(omega * t + phi)
+    y = k + r * np.sin(omega * t + phi)
+    x_prime = -r * omega * np.sin(omega * t + phi)  # Derivative of x with respect to t
+    y_prime = r * omega * np.cos(omega * t + phi)  # Derivative of y with respect to t
+    return x, y, x_prime, y_prime
 
-# Extract the fitted parameters
-fitted_h, fitted_k, fitted_r = params
+def calculate_instantaneous_velocity(x, y, t):
+    """ Calculate instantaneous velocity norms from x, y, t data. """
+    dx = np.diff(x)
+    dy = np.diff(y)
+    dt = np.diff(t)
+    velocities = np.sqrt((dx/dt)**2 + (dy/dt)**2) / 1000  # Convert to m/s
+    return velocities
 
-# Generate x and y values for the fitted circle
-theta = np.linspace(0, 2 * np.pi, 1000)
-x_fit_mm = fitted_r * np.cos(theta) + fitted_h
-y_fit_mm = fitted_r * np.sin(theta) + fitted_k
+def main():
+    # Load the data
+    file_path = 'xy_t.csv'  # Replace with your file path
+    data = pd.read_csv(file_path)
 
-# Interpolate the fitted circle to create smooth functions for x and y
-fitted_time = np.linspace(time_values[0], time_values[-1], 1000)
-x_spline = UnivariateSpline(fitted_time, x_fit_mm, s=0, k=4)
-y_spline = UnivariateSpline(fitted_time, y_fit_mm, s=0, k=4)
+    # Extract x, y coordinates, and time
+    x = data['X'].values
+    y = data['Y'].values
+    t = data['t'].values
 
-# Differentiate the splines to get velocity components
-dx_dt_spline = x_spline.derivative()
-dy_dt_spline = y_spline.derivative()
+    # Initial guess for the parameters (h, k, r)
+    initial_guess = [0, 0, 1]
 
-# Calculate the velocity magnitudes
-instantaneous_velocities_norm = np.sqrt(dx_dt_spline(fitted_time)**2 + dy_dt_spline(fitted_time)**2)
+    # Perform the least squares fit to find the circle center
+    result = least_squares(fit_circle, initial_guess, args=(x, y))
+    h_fit, k_fit, r_fit = result.x
 
-# Calculate the average velocity
-average_velocity_m_s = np.mean(instantaneous_velocities_norm) / 1000.0
+    # Estimate angular velocity omega
+    theta_unwrapped = np.unwrap(np.arctan2(y - k_fit, x - h_fit))
+    omega_estimated = np.mean(np.diff(theta_unwrapped) / np.diff(t))
 
-# Convert velocities from mm/s to m/s
-instantaneous_velocities_norm_m_s = instantaneous_velocities_norm / 1000.0
+    # Calculate instantaneous velocity norms
+    inst_velocity_norms = calculate_instantaneous_velocity(x, y, t)
+    avg_velocity_norm = np.mean(inst_velocity_norms)
 
-# Create the Matplotlib plot for displaying velocities in m/s
-plt.figure(figsize=(8, 6))
-plt.plot(fitted_time, instantaneous_velocities_norm_m_s, label='Instantaneous Velocity Norm (m/s)', color='b')
-plt.axhline(average_velocity_m_s, linestyle='--', label='Average Velocity (m/s)', color='r')
-plt.xlabel('Time (s)')
-plt.ylabel('Velocity (m/s)')
-plt.title('Instantaneous and Average Velocities (Norm) Using Fitted Curve Derivative')
-plt.legend()
-plt.grid(True)
+    # Plotting
+    plt.figure(figsize=(12, 6))
 
-# Show the plot
-plt.show()
+    # Plot the original data points and the fitted circle
+    plt.subplot(1, 2, 1)
+    plt.scatter(x, y, label='Data Points')
+    # Plot the fitted circle
+    t_circle = np.linspace(0, 2 * np.pi, 500)
+    x_circle, y_circle, _, _ = circle_equations(t_circle, h_fit, k_fit, np.abs(r_fit), 1, 0)
+    plt.plot(x_circle, y_circle, color='red', label='Fitted Circle')
+    plt.xlabel('X (mm)')
+    plt.ylabel('Y (mm)')
+    plt.title('Circle Fitting to Data Points')
+    plt.legend()
+    plt.axis('equal')
+
+    # Plot the instantaneous velocity norm and average velocity norm
+    plt.subplot(1, 2, 2)
+    plt.plot(t[1:], inst_velocity_norms, label='Instantaneous Velocity Norm (m/s)')
+    plt.axhline(y=avg_velocity_norm, color='r', linestyle='--', label=f'Average Velocity Norm = {avg_velocity_norm:.3f} m/s')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Velocity Norm (m/s)')
+    plt.title('Velocity Norm over Time')
+    plt.legend()
+
+    # Show the plots
+    plt.tight_layout()
+    plt.show()
+
+if __name__ == "__main__":
+    main()
