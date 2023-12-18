@@ -26,7 +26,7 @@ def calculate_instantaneous_velocity(x, y, t):
 
 def main():
     # Load the data
-    file_path = 'xy_t.csv'  # Replace with your file path
+    file_path = '126_init.csv'  # Replace with your file path
     data = pd.read_csv(file_path)
 
     # Extract x, y coordinates, and time

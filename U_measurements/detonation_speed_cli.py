@@ -26,7 +26,12 @@ def calculate_instantaneous_velocity(x, y, t):
 
 def main():
     # Load the data
-    file_path = '126_init.csv'  # Replace with your file path
+    # Get user input for shot number and option
+    shot_number = input("Enter the shot number (XXX): ")
+    option = input("Enter the option (init/prop): ")
+
+    # Construct the file path
+    file_path = f"{shot_number}_{option}.csv"
     data = pd.read_csv(file_path)
 
     # Extract x, y coordinates, and time
@@ -50,10 +55,11 @@ def main():
     avg_velocity_norm = np.mean(inst_velocity_norms)
 
     # Plotting
-    plt.figure(figsize=(12, 6))
+    #plt.figure(figsize=(12, 6))
 
     # Plot the original data points and the fitted circle
-    plt.subplot(1, 2, 1)
+    plt.figure(figsize=(12, 6))
+    plt.title(f'Shot {shot_number}: Wave position vs. time')
     plt.scatter(x, y, label='Data Points')
     # Plot the fitted circle
     t_circle = np.linspace(0, 2 * np.pi, 500)
@@ -64,18 +70,29 @@ def main():
     plt.title('Circle Fitting to Data Points')
     plt.legend()
     plt.axis('equal')
+    plt.savefig(f'{shot_number}_{option}_position.svg', format='svg')
 
     # Plot the instantaneous velocity norm and average velocity norm
-    plt.subplot(1, 2, 2)
+    plt.figure(figsize=(12, 6))
+    plt.title(f'Shot {shot_number}: Wave velocity')
     plt.plot(t[1:], inst_velocity_norms, label='Instantaneous Velocity Norm (m/s)')
-    plt.axhline(y=avg_velocity_norm, color='r', linestyle='--', label=f'Average Velocity Norm = {avg_velocity_norm:.3f} m/s')
+    if option == 'prop':
+        plt.axhline(y=avg_velocity_norm, color='r', linestyle='--', label=f'Average Velocity Norm = {avg_velocity_norm:.3f} m/s')
     plt.xlabel('Time (s)')
     plt.ylabel('Velocity Norm (m/s)')
     plt.title('Velocity Norm over Time')
     plt.legend()
+    plt.savefig(f'{shot_number}_{option}_velocity.svg', format='svg')
 
     # Show the plots
-    plt.tight_layout()
+
+    #plt.tight_layout()
+    
+    # # Construct the file name based on user input
+    # figure_name = f"{shot_number}_{option}.svg"
+    # # Save the figure with the constructed file name
+    # plt.savefig(figure_name, format='svg')
+    # plt.savefig(f'{shot_number}_velocity.svg', format='svg')
     plt.show()
 
 if __name__ == "__main__":
